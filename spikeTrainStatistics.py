@@ -61,14 +61,42 @@ def createBinnedSpikeTrain(spiketrainArray, startWindow, endWindow, BinSize):
 	return BinnedSignal
 
 
+def PSTH(spiketrain, binSize):
+	"""Returns PSTH for a spiketrain with desired bin size
+
+	Keyword arguments:
+	spiketrain --spike times
+	binSize -- size of the bin 
+	"""
+
+	binarySpikeTrain = createBinnedSpikeTrain(spiketrain,0,4000,1)
+	#print (binarySpikeTrain)
+	spikeTrainSize = np.size(binarySpikeTrain)
+	print("no of data points: {}".format(spikeTrainSize))
+	noOfBins = int(spikeTrainSize/binSize) 
+	binarySpikeTrain_reshaped = binarySpikeTrain.reshape(noOfBins, int(binSize))
+	np.shape(binarySpikeTrain)
+	print ("array shape: {}".format(np.shape(binarySpikeTrain)))
+	#array to store no of spikes in a bin
+	PSTH_array = np.zeros(noOfBins)
+	
+	for i in range(noOfBins):
+		PSTH_array[i] =  np.count_nonzero(binarySpikeTrain_reshaped[i,:] == 1)
+
+	print("PSTH :{}".format(PSTH_array))
+
+	return binarySpikeTrain, PSTH_array,noOfBins
+
+
 
 if __name__ == "__main__":
 
 	#spike train file name
-	filename = 'spiketrainch47.txt'
-
+	filename1 = 'spiketrainch47.txt'
+	filename2 = 'spiketrainch46.txt'
 	#reading spike times from the file
-	spiketrain = readSpikeTrains(filename)
+	spiketrain1 = readSpikeTrains(filename1)
+	spiketrain2 = readSpikeTrains(filename2)
 
 	#creating binned signal with a binary values, for this purpose we are taking a snippet of spike train 
 	#from 1000 ms to 2500 ms
@@ -76,10 +104,14 @@ if __name__ == "__main__":
 	endWindow = 2500 #in ms
 	BinSize = 20 # in ms
 	#Binned array with 
-	BinnedSpikeTrain = createBinnedSpikeTrain(spiketrain, startWindow, endWindow, BinSize)
-	
+	BinnedSpikeTrain1 = createBinnedSpikeTrain(spiketrain1, startWindow, endWindow, BinSize)
+	BinnedSpikeTrain2 = createBinnedSpikeTrain(spiketrain2, startWindow, endWindow, BinSize)
 	# Now that we have created a binned spike train, lets try autocorrelation i.e. correlation among time lagged version of the same signal
-	AutoCor = np.correlate(BinnedSpikeTrain, BinnedSpikeTrain, mode='full') # np.correlate is much faster than scipy.signal.correlate (that's open-source for ya)
+	AutoCor = np.correlate(BinnedSpikeTrain1, BinnedSpikeTrain2, mode='full') # np.correlate is much faster than scipy.signal.correlate (that's open-source for ya)
 	print ("auto corr: {}".format(AutoCor))
 	plt.plot(AutoCor)
 	plt.show()
+
+
+
+
