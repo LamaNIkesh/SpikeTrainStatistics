@@ -88,9 +88,20 @@ def PSTH(spiketrain, binSize):
 	return binarySpikeTrain, PSTH_array,noOfBins
 
 
+def ISI():
+	"""Calcutates ISI distances
+
+	"""
+	pass
+
+def plot_ISIH():
+	"""Plots ISI histogram
+	"""
+
+
 
 if __name__ == "__main__":
-
+	'''
 	#spike train file name
 	filename1 = 'spiketrainch47.txt'
 	filename2 = 'spiketrainch46.txt'
@@ -111,7 +122,7 @@ if __name__ == "__main__":
 	print ("auto corr: {}".format(AutoCor))
 	plt.plot(AutoCor)
 	plt.show()
-
+	'''
 
 
 
