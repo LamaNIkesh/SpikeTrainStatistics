@@ -93,6 +93,16 @@ def PSTH(spiketrain, binSize):
 
 	return binarySpikeTrain, PSTH_array, noOfBins
 	'''
+	#Not sure this is the best way but wanted to get the real time axis and not binned axis
+	# so for each bin count is stored in a first element of row
+	# the psth bar plot width is the binsize so the rest of the elements are not needed
+	# hence, all the other elements are just stored as zero. 
+	# not optimised at all. .....
+	# will come back to this later. 
+
+	###TO DO -- make it automatic to read any number of spike trains and plot corresponding PSTH. 
+
+
 	for i in range(noOfBins):
 		for j in range(binSize):
 			if j == 0: 
