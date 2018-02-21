@@ -412,7 +412,7 @@ if __name__ == "__main__":
 	#plt.figure(figsize = (10,10))
 	n,bins,patches = plt.hist(ISI_distances,bins = noOfbins, histtype = 'step', normed = True,color = 'blue',linewidth = 1.0)
 	ax3.plot(bins,density(bins),'r--', label = 'Density estimation')
-	
+	plt.xlim([0,200])
 	ax3.set_xlabel("Time(ms)")
 	ax3.set_ylabel("# of intervals per bin")
 	#ax3.legend(loc = 'upper right')
