@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 import matplotlib.mlab as mlab
 from matplotlib.ticker import MaxNLocator
 import io
+import scipy.stats as stats
  
 def readSpikeTrains(filename):
 	""" Returns array of spike times read from a txt file
@@ -29,6 +30,29 @@ def readSpikeTrains(filename):
 
 	return spiketrain
 
+
+def raster(event_times_list, **kwargs):
+    """
+    Creates a raster plot
+    Parameters
+    ----------
+    event_times_list : iterable
+                       a list of event time iterables
+    color : string
+            color of vlines
+    Returns
+    -------
+    ax : an axis containing the raster plot
+    """
+    ax = plt.gca()
+    #plt.xlim([3900,4100])   #here we can limit which part of the raster plot we want to look
+    #plt.ylim([45,54])
+    for ith, trial in enumerate(event_times_list):
+        plt.vlines(trial, ith + .5, ith + 0.8, **kwargs)
+        #print ("trial ",trial)
+    #plt.ylim(.5, len(event_times_list) + .5)
+    plt.ylim([45,54])
+    return ax
 
 def createBinnedSpikeTrain(spiketrainArray, startWindow, endWindow, BinSize):
 	"""	Returns binned spike train with desired bin size.
@@ -71,7 +95,7 @@ def PSTH(spiketrain, binSize):
 	binSize -- size of the bin 
 	"""
 
-	binarySpikeTrain = createBinnedSpikeTrain(spiketrain,500,3500,1)
+	binarySpikeTrain = createBinnedSpikeTrain(spiketrain,0,5000,1)
 	totalTimestamps = np.size(binarySpikeTrain)
 	#print (binarySpikeTrain)
 	spikeTrainSize = np.size(binarySpikeTrain)
@@ -114,16 +138,57 @@ def PSTH(spiketrain, binSize):
 	return binarySpikeTrain, PSTH_array.flatten(),binSize
 
 
-def ISI():
+def ISI(spiketrain1 = [], spiketrain2 = [], *args):
 	"""Calcutates ISI distances
+		Interspike interval is a temporal distance between two consecutive spikes
+		Basically, we calculate distance between n and n+1 spike. Then plot the density histogram
 
+		Try with one spike train first.
 	"""
-	pass
+	ISI_distances = list()
+	range_index = np.size(spiketrain1) - 1
+	#print("range :{}".format(np.size(spiketrain)))
+	for i in range(range_index):
+		#print ("index: {}, spiketrain[48] = {}".format(i,spiketrain[48]))
+		ISI_distances.append(spiketrain1[i+1] - spiketrain1[i])
+		#print("ISI Distance at index {} is {}".format(i,ISI_distances[i]))
+	for i in range(np.size(spiketrain2) -1):
+		 ISI_distances.append(spiketrain2[i+1] - spiketrain2[i])
+	return ISI_distances
 
-def plot_ISIH():
+def ISI_multi(spiketrain = [], *args):
+	"""Calcutates ISI distances for a list of spike trains
+		Interspike interval is a temporal distance between two consecutive spikes
+		Basically, we calculate distance between n and n+1 spike. Then plot the density histogram
+
+		Try with one spike train first.
+	"""
+	ISI_distances = list()
+	range_index = len(spiketrain) # no of spike trains
+	#print("range :{}".format(np.size(spiketrain)))
+	for i in range(range_index):
+		#print ("index: {}, spiketrain[48] = {}".format(i,spiketrain[48]))
+		for j in range(len(spiketrain[i]) - 1):
+			ISI_distances.append(spiketrain[i][j+1] - spiketrain[i][j])
+			#print("ISI Distance at index {} is {}".format(i,ISI_distances[i]))
+	return ISI_distances
+
+
+
+def plot_ISIH(ISI_distances = [], noOfbins = int):
 	"""Plots ISI histogram
 	"""
-
+	#calculating a density estimation line as well
+	density = stats.gaussian_kde(ISI_distances)
+	#print ("density: {}".format(density))
+	plt.figure(figsize = (10,10))
+	n,bins,patches = plt.hist(ISI_distances,bins = noOfbins, histtype = 'stepfilled', normed = True,color = 'blue',linewidth = 1.0)
+	plt.plot(bins,density(bins),'r--', label = 'Density estimation')
+	plt.xlabel("ISI-distances(ms)")
+	plt.ylabel("# of intervals per bin")
+	plt.legend(loc = 'upper right')
+	plt.title("ISI distances histogram")
+	plt.show()
 
 
 if __name__ == "__main__":
@@ -175,7 +240,7 @@ if __name__ == "__main__":
 
 	#print (PSTH1 + PSTH2)
 	PSTH = PSTH1 + PSTH2
-	
+	'''
 	x = np.arange(np.size(PSTH1))
 	print ("x axis: {} psth size{}".format(x, PSTH1))
 	plt.figure(figsize = (20,10))
@@ -183,4 +248,38 @@ if __name__ == "__main__":
 	plt.xlabel("Bin Counts")
 	plt.ylabel("Firing rate (#Spikes/s)")
 	plt.show()
-	
+	'''
+
+	#ISI distances matrix
+	ISI_distances = []
+	'''
+	ISI_distances = ISI(spiketrain1,spiketrain2)
+	print("ISI distances: {}".format(ISI_distances))
+	#plotting a line as well
+	density = stats.gaussian_kde(ISI_distances)
+	print ("density: {}".format(density))
+	n,x,_ = plt.hist(ISI_distances,bins = 10, histtype = u'step',normed = False)
+	#plt.plot(x,density(x))
+	plt.xlabel("ISI-distances(ms)")
+	plt.ylabel("# of intervals per bin")
+	plt.title("ISI distances histogram")
+	plt.show()
+	'''
+	spiketrain = []
+	SpikeFile_retina = 'SpikeTrains/final_interpolated_retina.txt'
+	SpikeFile_hippo = 'SpikeTrains/final_interpolated.txt'
+	SpikeFile_long = 'SpikeTrains/final_interpolated_long.txt'
+	try:
+		with open(SpikeFile_retina) as f:
+			lines=f.readlines()
+			for line in lines:
+				spiketrain.append(np.fromstring(line, dtype=float, sep=' '))
+	            #print(spiketrain)
+		print("spike train list is : {}, The shape is {}, elements in each row is {}".format(spiketrain,len(spiketrain), len(spiketrain[2])))
+		
+	except:
+		print("File not found!!!")
+
+	ISI_distances = ISI_multi(spiketrain)
+
+	plot_ISIH(ISI_distances, noOfbins = 500)
