@@ -350,7 +350,7 @@ if __name__ == "__main__":
 	SpikeFile_hippo = 'SpikeTrains/final_interpolated.txt'
 	SpikeFile_long = 'SpikeTrains/final_interpolated_long.txt'
 	try:
-		with open(SpikeFile_long) as f:
+		with open(SpikeFile_hippo) as f:
 			lines=f.readlines()
 			for line in lines:
 				spiketrain.append(np.fromstring(line, dtype=float, sep=' '))
@@ -392,12 +392,14 @@ if __name__ == "__main__":
 	ax1.set_ylabel('Neuron #')
 
 	#PSTH plot
-	PSTH_binCount,noOfbins,binSize = PSTH_multi(spiketrain, binSize = 10 , totalTime = 40000)
+	PSTH_binCount,noOfbins,binSize = PSTH_multi(spiketrain, binSize = 40 , totalTime = 5000)
 	PSTH_realTimeAxis = PSTH_realTimeAxis(PSTH_binCount, binSize)	
 	x = np.arange(np.size(PSTH_realTimeAxis))
 	#plt.figure(figsize = (20,10))
-	ax2.bar(x,PSTH_realTimeAxis, width = binSize, color = 'green')
+	ax2.bar(x,PSTH_realTimeAxis, width = binSize, color = 'green',label = '# of spikes/bin')
+	#ax2.plot(x,PSTH_realTimeAxis,'r--')
 	#ax2.set_xlabel("Bin Counts")
+	ax2.legend(loc = 'upper right')
 	ax2.set_ylabel("Firing rate (#Spikes/s)")
 	ax2.set_title("PSTH")
 	
@@ -410,13 +412,13 @@ if __name__ == "__main__":
 	#print ("density: {}".format(density))
 	
 	#plt.figure(figsize = (10,10))
-	n,bins,patches = plt.hist(ISI_distances,bins = noOfbins, histtype = 'step', normed = True,color = 'blue',linewidth = 1.0)
+	n,bins,patches = plt.hist(ISI_distances,bins = noOfbins, histtype = 'step', normed = True, color = 'blue',linewidth = 1.0, label = 'Normalised ISI distance')
 	ax3.plot(bins,density(bins),'r--', label = 'Density estimation')
-	plt.xlim([0,200])
+	#plt.xlim([0,2000])
 	ax3.set_xlabel("Time(ms)")
 	ax3.set_ylabel("# of intervals per bin")
-	#ax3.legend(loc = 'upper right')
+	ax3.legend(loc = 'upper right')
 	ax3.set_title("ISI distances histogram")
-
+	#plt.savefig('spike_stat.png')
 	plt.show()
 
