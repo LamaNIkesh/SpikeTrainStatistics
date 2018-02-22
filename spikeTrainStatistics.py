@@ -45,7 +45,7 @@ def raster(event_times_list, **kwargs):
     ax : an axis containing the raster plot
     """
     ax = plt.gca()
-    #plt.xlim([3900,4100])   #here we can limit which part of the raster plot we want to look
+    plt.xlim([0,5000])   #here we can limit which part of the raster plot we want to look
     #plt.ylim([45,54])
     for ith, trial in enumerate(event_times_list):
         plt.vlines(trial, ith + .5, ith + 2.8, **kwargs)
@@ -150,7 +150,7 @@ def PSTH_realTimeAxis(PSTH_binCount, binSize):
 	for start_index in range(0, len(PSTH_binCount), n):
 		if start_index>0:
 			PSTH_realTimeAxis.extend(PSTH_binCount[start_index:start_index+n])
-			for i in range(binSize):
+			for i in range(binSize -  1): #the first element stays on for eg for bin size 10: element[0],0,0,0,0,0,0,0,0,0,element[1]....
 				PSTH_realTimeAxis.append(0)
 
 	print ("New PSTH: {}".format(PSTH_realTimeAxis))
@@ -241,10 +241,13 @@ def ISI_multi(spiketrain = [], *args):
 	ISI_distances = list()
 	range_index = len(spiketrain) # no of spike trains
 	#print("range :{}".format(np.size(spiketrain)))
+	#loop through each spike train timestamps
 	for i in range(range_index):
 		#print ("index: {}, spiketrain[48] = {}".format(i,spiketrain[48]))
 		for j in range(len(spiketrain[i]) - 1):
-			ISI_distances.append(spiketrain[i][j+1] - spiketrain[i][j])
+			#the ISI distance less than 10 ms will be discarded
+			if (spiketrain[i][j+1] - spiketrain[i][j] > 2):
+				ISI_distances.append(spiketrain[i][j+1] - spiketrain[i][j])
 			#print("ISI Distance at index {} is {}".format(i,ISI_distances[i]))
 	return ISI_distances
 
@@ -259,7 +262,8 @@ def plot_ISIH(ISI_distances = [], noOfbins = int):
 	#print ("density: {}".format(density))
 	
 	#plt.figure(figsize = (10,10))
-	n,bins,patches = plt.hist(ISI_distances,bins = noOfbins, histtype = 'stepfilled', normed = True,color = 'blue',linewidth = 1.0)
+	print ("ISI distances: {}".format(ISI_distances))
+	n,bins,patches = plt.hist(ISI_distances,bins = noOfbins, histtype = 'stepfilled', normed = True ,color = 'blue',linewidth = 1.0)
 	plt.plot(bins,density(bins),'r--', label = 'Density estimation')
 	'''
 	plt.xlabel("ISI-distances(ms)")
@@ -295,21 +299,6 @@ if __name__ == "__main__":
 	plt.plot(AutoCor)
 	plt.show()
 	'''
-	#print ("Binned Spike Train1: {}".format(BinnedSpikeTrain1))#
-	#print ("No of spikes in spike train 1: {}".format(np.count_nonzero(BinnedSpikeTrain1 == 1)))
-	#print ("Binned Spike Train2: {}".format(BinnedSpikeTrain2))
-	#print ("No of spikes in spike train 2: {}".format(np.count_nonzero(BinnedSpikeTrain2 == 1)))
-	# fig, (ax1,ax2) = plt.subplots(nrows = 2, figsize = (20,5))
-	# #plt.figure(figsize=(5,15))
-	# x1 = np.arange(np.size(BinnedSpikeTrain1))
-	# print (x1)
-	# x2 = np.arange(np.size(BinnedSpikeTrain2))
-	# np.savetxt('binnedspiketrain.txt', BinnedSpikeTrain1)
-	# ax1.bar(x1,BinnedSpikeTrain1)
-	# ax1.yaxis.set_major_locator(MaxNLocator(integer = True))
-	# ax2.bar(x2,BinnedSpikeTrain2)
-	# ax2.yaxis.set_major_locator(MaxNLocator(integer = True))
-	# plt.show()
 
 	#Some PSTH stuff, trying
 	binSize = 40
@@ -349,8 +338,9 @@ if __name__ == "__main__":
 	SpikeFile_retina = 'SpikeTrains/final_interpolated_retina.txt'
 	SpikeFile_hippo = 'SpikeTrains/final_interpolated.txt'
 	SpikeFile_long = 'SpikeTrains/final_interpolated_long.txt'
+	SpikeFile_test = 'SpikeTrains/PySpike_testdata.txt'
 	try:
-		with open(SpikeFile_hippo) as f:
+		with open(SpikeFile_long) as f:
 			lines=f.readlines()
 			for line in lines:
 				spiketrain.append(np.fromstring(line, dtype=float, sep=' '))
@@ -359,32 +349,34 @@ if __name__ == "__main__":
 		
 	except:
 		print("File not found!!!")
-	'''	
+	'''
 	ax = raster(spiketrain)
 	plt.title('Raster Plot')
 	plt.xlabel('Time(ms)')
 	plt.ylabel('Neuron #')
 	plt.show()
-
+	
 	ISI_distances = ISI_multi(spiketrain)
 
 	plot_ISIH(ISI_distances, noOfbins = 500)
 	
-	PSTH_binCount,noOfbins,binSize = PSTH_multi(spiketrain, binSize = 50 , totalTime = 5000)
+	#PSTH_binCount,noOfbins,binSize = PSTH_multi(spiketrain, binSize = 50 , totalTime = 5000)
 	x = np.arange(np.size(PSTH_binCount))
 	plt.figure(figsize = (20,10))
 	plt.bar(x,PSTH_binCount, color = 'k')
 	plt.xlabel("Bin Counts")
 	plt.ylabel("Firing rate (#Spikes/s)")
+
 	plt.show()
 	'''
 	#plotting raster plot, PSTH and ISI on top of each other.....
-
+	
 	fig, (ax1,ax2,ax3) = plt.subplots(nrows=3, sharex = False ,figsize=(8, 12))
 	fig.tight_layout()
 
 	#ax1 = raster(spiketrain)
 	#####raster plot
+	ax1.set_xlim([-5,40000])
 	for ith, trial in enumerate(spiketrain):
 		ax1.vlines(trial, ith + .5, ith + 2.8)
 	ax1.set_title('Raster Plot')
@@ -392,11 +384,12 @@ if __name__ == "__main__":
 	ax1.set_ylabel('Neuron #')
 
 	#PSTH plot
-	PSTH_binCount,noOfbins,binSize = PSTH_multi(spiketrain, binSize = 40 , totalTime = 5000)
+	PSTH_binCount,noOfbins,binSize = PSTH_multi(spiketrain, binSize = 20 , totalTime = 40000)
 	PSTH_realTimeAxis = PSTH_realTimeAxis(PSTH_binCount, binSize)	
 	x = np.arange(np.size(PSTH_realTimeAxis))
 	#plt.figure(figsize = (20,10))
-	ax2.bar(x,PSTH_realTimeAxis, width = binSize, color = 'green',label = '# of spikes/bin')
+	ax2.set_xlim([-5,40000])
+	ax2.bar(x,PSTH_realTimeAxis, width = binSize, color = 'black',label = '# of spikes/bin')
 	#ax2.plot(x,PSTH_realTimeAxis,'r--')
 	#ax2.set_xlabel("Bin Counts")
 	ax2.legend(loc = 'upper right')
@@ -410,8 +403,8 @@ if __name__ == "__main__":
 	#calculating a density estimation line as well
 	density = stats.gaussian_kde(ISI_distances)
 	#print ("density: {}".format(density))
-	
 	#plt.figure(figsize = (10,10))
+	ax3.set_xlim([-20,40000])
 	n,bins,patches = plt.hist(ISI_distances,bins = noOfbins, histtype = 'step', normed = True, color = 'blue',linewidth = 1.0, label = 'Normalised ISI distance')
 	ax3.plot(bins,density(bins),'r--', label = 'Density estimation')
 	#plt.xlim([0,2000])
@@ -419,6 +412,19 @@ if __name__ == "__main__":
 	ax3.set_ylabel("# of intervals per bin")
 	ax3.legend(loc = 'upper right')
 	ax3.set_title("ISI distances histogram")
-	#plt.savefig('spike_stat.png')
+	plt.savefig('figures/spike_stat_retina.png')
 	plt.show()
+	
 
+	##autocorrelation test for few spike trains..
+
+	##spike train number 47 and 46
+	'''
+	spiketrain_1 = createBinnedSpikeTrain(spiketrain[45], startWindow = 0, endWindow = 5000, BinSize = 1)
+	spiketrain_2 = createBinnedSpikeTrain(spiketrain[760], startWindow = 0, endWindow = 5000, BinSize = 1)
+
+	plt.xcorr(spiketrain_1,spiketrain_2, maxlags = (np.size(spiketrain_1) - 1), usevlines = True, normed = False)
+	plt.xlabel("Time lags")
+	plt.ylabel("correlation values")
+	plt.show()
+	'''
