@@ -340,7 +340,7 @@ if __name__ == "__main__":
 	SpikeFile_long = 'SpikeTrains/final_interpolated_long.txt'
 	SpikeFile_test = 'SpikeTrains/PySpike_testdata.txt'
 	try:
-		with open(SpikeFile_long) as f:
+		with open(SpikeFile_test) as f:
 			lines=f.readlines()
 			for line in lines:
 				spiketrain.append(np.fromstring(line, dtype=float, sep=' '))
@@ -376,7 +376,7 @@ if __name__ == "__main__":
 
 	#ax1 = raster(spiketrain)
 	#####raster plot
-	ax1.set_xlim([-5,40000])
+	ax1.set_xlim([-5,4000])
 	for ith, trial in enumerate(spiketrain):
 		ax1.vlines(trial, ith + .5, ith + 2.8)
 	ax1.set_title('Raster Plot')
@@ -388,7 +388,7 @@ if __name__ == "__main__":
 	PSTH_realTimeAxis = PSTH_realTimeAxis(PSTH_binCount, binSize)	
 	x = np.arange(np.size(PSTH_realTimeAxis))
 	#plt.figure(figsize = (20,10))
-	ax2.set_xlim([-5,40000])
+	ax2.set_xlim([-5,4000])
 	ax2.bar(x,PSTH_realTimeAxis, width = binSize, color = 'black',label = '# of spikes/bin')
 	#ax2.plot(x,PSTH_realTimeAxis,'r--')
 	#ax2.set_xlabel("Bin Counts")
@@ -404,7 +404,7 @@ if __name__ == "__main__":
 	density = stats.gaussian_kde(ISI_distances)
 	#print ("density: {}".format(density))
 	#plt.figure(figsize = (10,10))
-	ax3.set_xlim([-20,40000])
+	ax3.set_xlim([-20,4000])
 	n,bins,patches = plt.hist(ISI_distances,bins = noOfbins, histtype = 'step', normed = True, color = 'blue',linewidth = 1.0, label = 'Normalised ISI distance')
 	ax3.plot(bins,density(bins),'r--', label = 'Density estimation')
 	#plt.xlim([0,2000])
@@ -412,7 +412,7 @@ if __name__ == "__main__":
 	ax3.set_ylabel("# of intervals per bin")
 	ax3.legend(loc = 'upper right')
 	ax3.set_title("ISI distances histogram")
-	plt.savefig('figures/spike_stat_retina.png')
+	plt.savefig('figures/spike_stat_synthetic.png')
 	plt.show()
 	
 
