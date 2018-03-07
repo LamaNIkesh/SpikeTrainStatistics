@@ -2,7 +2,7 @@
 
 Some simple spike train statistics
 
-* Correlation
-* PSTH
-* ISIH
+* Auto and cross Correlation -- still undergoing
+* PSTH - binning options
+* ISIH 
 
